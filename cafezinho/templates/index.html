@@ -25,11 +25,11 @@
 <body>
     <div class="container">
         <h1 class="text-center mb-4">Lista de Contribuições</h1>
-
-        <!-- Botão para abrir o modal -->
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addContribuicaoModal">
-            Adicionar Contribuição
-        </button>
+        <a href="http://127.0.0.1:8000/admin/">
+            <button class="btn btn-primary mb-3">
+                Ir pra área administrativa
+            </button>
+        </a>
 
         <!-- Tabela de Contribuições -->
         <table class="table table-striped table-hover">
@@ -133,46 +133,6 @@
                     contribuinteSelect.innerHTML = `<option value="" class="text-danger">Erro ao carregar contribuintes.</option>`;
                 });
         }
-
-        // Enviar uma nova contribuição para a API
-        addContribuicaoForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const descricao = document.getElementById("descricao").value;
-            const data = document.getElementById("data").value;
-            const contribuinte = document.getElementById("contribuinte").value;
-
-            const newContribution = {
-                descricao_da_contribuicao: descricao,
-                data: data,
-                contribuinte: contribuinte
-            };
-
-            fetch(apiUrlContribuicoes, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newContribution),
-            })
-                .then(response => response.text()) // Recebe a resposta como texto
-                .then(text => {
-                    console.log('Resposta do servidor:', text);
-                    return JSON.parse(text); // Tenta analisar o texto como JSON
-                })
-                .then(data => {
-                    console.log('Dados da resposta:', data);
-                    // Fechar o modal e recarregar as contribuições
-                    document.getElementById("addContribuicaoModal").modal('hide');
-                    loadContribuicoes();
-                })
-                .catch(error => {
-                    console.error('Erro ao adicionar contribuição:', error);
-                });
-
-        });
-
-        // Carregar as contribuições e contribuintes ao carregar a página
         loadContribuicoes();
         loadContribuintes();
     </script>
