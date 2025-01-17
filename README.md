@@ -1,1 +1,4 @@
-# cafezinho_django
+# Aplicação pra gerenciamento do Café
+
+- Django
+- Javascript  + Bootstrap
