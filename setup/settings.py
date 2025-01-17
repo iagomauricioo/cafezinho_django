@@ -46,9 +46,6 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True  # Permitir todas as origens
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Adicione o endereço de origem permitido
-]
 
 ROOT_URLCONF = "setup.urls"
 
