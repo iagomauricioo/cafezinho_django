@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Contribuições</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Lista de Contribuições</h1>
+
+        <!-- Botão para abrir o modal -->
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addContribuicaoModal">
+            Adicionar Contribuição
+        </button>
+
+        <!-- Tabela de Contribuições -->
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Descrição</th>
+                    <th>Data</th>
+                    <th>Contribuinte</th>
+                </tr>
+            </thead>
+            <tbody id="contributions-table-body">
+                <!-- Dados da tabela serão inseridos dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para adicionar contribuição -->
+    <div class="modal fade" id="addContribuicaoModal" tabindex="-1" aria-labelledby="addContribuicaoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addContribuicaoModalLabel">Adicionar Contribuição</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addContribuicaoForm">
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <input type="text" class="form-control" id="descricao" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contribuinte" class="form-label">Contribuinte</label>
+                            <select class="form-control" id="contribuinte" required>
+                                <option value="">Selecione o Contribuinte</option>
+                                <!-- Opções serão carregadas via JavaScript -->
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para carregar dados e enviar a contribuição -->
+    <script>
+        const apiUrlContribuicoes = 'http://127.0.0.1:8000/contribuicoes/';
+        const apiUrlContribuintes = 'http://127.0.0.1:8000/contribuintes/';
+        const tableBody = document.getElementById("contributions-table-body");
+        const addContribuicaoForm = document.getElementById("addContribuicaoForm");
+        const contribuinteSelect = document.getElementById("contribuinte");
+
+        // Função para carregar contribuições da API
+        function loadContribuicoes() {
+            fetch(apiUrlContribuicoes)
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = "";
+                    data.forEach(contribution => {
+                        const row = `
+                            <tr>
+                                <td>${contribution.id}</td>
+                                <td>${contribution.descricao_da_contribuicao}</td>
+                                <td>${contribution.data}</td>
+                                <td>${contribution.contribuinte_nome}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar contribuições:', error);
+                    tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Erro ao carregar contribuições.</td></tr>`;
+                });
+        }
+
+        // Função para carregar contribuintes da API
+        function loadContribuintes() {
+            fetch(apiUrlContribuintes)
+                .then(response => response.json())
+                .then(data => {
+                    contribuinteSelect.innerHTML = '<option value="">Selecione o Contribuinte</option>'; // Resetando o select
+                    data.forEach(contribuinte => {
+                        const option = document.createElement("option");
+                        option.value = contribuinte.id;
+                        option.textContent = contribuinte.nome;
+                        contribuinteSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar contribuintes:', error);
+                    contribuinteSelect.innerHTML = `<option value="" class="text-danger">Erro ao carregar contribuintes.</option>`;
+                });
+        }
+
+        // Enviar uma nova contribuição para a API
+        addContribuicaoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const descricao = document.getElementById("descricao").value;
+            const data = document.getElementById("data").value;
+            const contribuinte = document.getElementById("contribuinte").value;
+
+            const newContribution = {
+                descricao_da_contribuicao: descricao,
+                data: data,
+                contribuinte: contribuinte
+            };
+
+            fetch(apiUrlContribuicoes, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newContribution),
+            })
+                .then(response => response.text()) // Recebe a resposta como texto
+                .then(text => {
+                    console.log('Resposta do servidor:', text);
+                    return JSON.parse(text); // Tenta analisar o texto como JSON
+                })
+                .then(data => {
+                    console.log('Dados da resposta:', data);
+                    // Fechar o modal e recarregar as contribuições
+                    document.getElementById("addContribuicaoModal").modal('hide');
+                    loadContribuicoes();
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar contribuição:', error);
+                });
+
+        });
+
+        // Carregar as contribuições e contribuintes ao carregar a página
+        loadContribuicoes();
+        loadContribuintes();
+    </script>
+</body>
+
+</html>
